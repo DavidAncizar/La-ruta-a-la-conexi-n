@@ -167,12 +167,14 @@ export default function WorldsPage() {
                 )}
 
                 {/* Recompensa */}
-                <div className="game-world-card__reward">
-                  <span>{w.isComplete ? '🎁' : '🔒'}</span>
-                  <span className="small">
-                    Recompensa: {['🧢 Cabeza', '👕 Cuerpo', '👟 Piernas'][w.order - 1]} del avatar
-                  </span>
-                </div>
+                {w.order <= 2 && (
+                  <div className="game-world-card__reward">
+                    <span>{w.isComplete ? '🎁' : '🔒'}</span>
+                    <span className="small">
+                      Recompensa: {w.order === 1 ? '🎨 Avatar de profesión' : '⚔️ Avatar de caballeros del zodiaco'}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
