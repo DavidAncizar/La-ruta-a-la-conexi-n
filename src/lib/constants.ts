@@ -122,7 +122,7 @@ export const MECHANIC_LABELS: Record<string, string> = {
 /**
  * Grados disponibles
  */
-export const GRADES = ['8', '9', '10'] as const
+export const GRADES = ['8', '9', '10', '11'] as const
 
 /**
  * Ejemplo de cursos (el admin podría crear más)
@@ -131,4 +131,5 @@ export const SAMPLE_CLASSROOMS = [
   '8-1', '8-2', '8-3', '8-4', '8-5',
   '9-1', '9-2', '9-3', '9-4', '9-5',
   '10-1', '10-2', '10-3', '10-4', '10-5',
+  '11-1', '11-2', '11-3', '11-4', '11-5',
 ] as const
