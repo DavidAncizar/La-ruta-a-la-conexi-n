@@ -49,6 +49,7 @@ body {
   background-color: var(--eq-bg);
   color: var(--eq-text);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 #root {
@@ -72,7 +73,8 @@ body {
    ───────────────────────────────────────────────────── */
 .eq-navbar {
   background: linear-gradient(135deg, var(--eq-primary) 0%, var(--eq-primary-dark) 100%);
-  height: var(--navbar-height);
+  min-height: var(--navbar-height);
+  padding: 0.5rem 0;
   box-shadow: 0 2px 12px rgba(26, 63, 128, 0.3);
   flex-shrink: 0;
 }
@@ -219,6 +221,23 @@ body {
   padding: 4.5rem 0 3.5rem;
   position: relative;
   overflow: hidden;
+}
+
+/* Evitar desbordamiento horizontal en móvil */
+.eq-hero .container {
+  overflow-x: hidden;
+}
+
+.eq-hero .container .row {
+  overflow-x: hidden;
+}
+
+/* Badge del colegio: que no se salga en pantallas pequeñas */
+.eq-hero .badge {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
 }
 
 .eq-hero::before {

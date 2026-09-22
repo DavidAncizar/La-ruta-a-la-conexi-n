@@ -235,8 +235,16 @@ export default function LandingPage() {
 
             <div className="col-12 col-lg-7">
               <span
-                className="badge mb-3 px-3 py-2"
-                style={{ background: 'rgba(255,255,255,0.18)', fontSize: '0.82rem', fontWeight: 600 }}
+                className="badge mb-3 px-3 py-2 d-inline-block"
+                style={{
+                  background: 'rgba(255,255,255,0.18)',
+                  fontSize: 'clamp(0.7rem, 2.5vw, 0.82rem)',
+                  fontWeight: 600,
+                  maxWidth: '100%',
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  textAlign: 'center',
+                }}
               >
                 🎓 Colegio Ciudad de Pasto · Grados 8°, 9°, 10° y 11°
               </span>

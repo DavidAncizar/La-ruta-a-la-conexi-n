@@ -77,7 +77,7 @@ export const CHALLENGES: Challenge[] = [
     id: 10,
     category: 'placeholder',
     title: 'Reto 10',
-    description: 'Sube una publicación o historia en tu red social preferidad una foto con o de tu mejor amigo opinando de el.',
+    description: 'Sube una publicación o historia en tu red social preferida una foto con o de tu mejor amigo opinando de él.',
     evidenceRequired: true,
   },
   {
