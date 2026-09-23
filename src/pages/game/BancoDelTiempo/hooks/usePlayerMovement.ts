@@ -10,6 +10,13 @@ const KEY_MAP: Record<string, Facing> = {
   d: 'right', arrowright: 'right',
 }
 
+/**
+ * Ref compartido con MobileControls para que el d-pad pueda
+ * inyectar direcciones activas sin pasar por estado React
+ * (evita re-renders en el loop de animación).
+ */
+export type TouchDirections = Set<Facing>
+
 interface Options {
   /** Punto de partida del avatar */
   spawn: Vec2
@@ -24,6 +31,12 @@ interface Options {
    * Se usa mientras hay un panel abierto o el nivel ya terminó.
    */
   enabled: boolean
+  /**
+   * Ref al Set de direcciones táctiles activas.
+   * MobileControls lo llena con touchstart/touchend;
+   * el bucle rAF lo lee igual que pressedKeys.
+   */
+  touchDirections?: React.RefObject<TouchDirections>
 }
 
 interface MovementState {
@@ -53,6 +66,7 @@ export function usePlayerMovement({
   speed,
   halfSize,
   enabled,
+  touchDirections,
 }: Options): MovementState {
   const [position, setPosition] = useState<Vec2>(spawn)
   const [facing, setFacing]     = useState<Facing>('down')
@@ -124,6 +138,16 @@ export function usePlayerMovement({
         if (direction === 'right') dirX += 1
       }
 
+      // Inyectar también las direcciones táctiles del d-pad móvil
+      if (touchDirections?.current) {
+        for (const dir of touchDirections.current) {
+          if (dir === 'up')    dirY -= 1
+          if (dir === 'down')  dirY += 1
+          if (dir === 'left')  dirX -= 1
+          if (dir === 'right') dirX += 1
+        }
+      }
+
       const moving = dirX !== 0 || dirY !== 0
 
       if (moving) {
@@ -166,7 +190,7 @@ export function usePlayerMovement({
     frameRef.current = requestAnimationFrame(tick)
 
     return () => cancelAnimationFrame(frameRef.current)
-  }, [enabled, areas, speed, halfSize])
+  }, [enabled, areas, speed, halfSize, touchDirections])
 
   /**
    * Vuelve a dejar el avatar en el punto de partida.

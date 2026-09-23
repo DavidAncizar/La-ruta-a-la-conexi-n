@@ -1341,13 +1341,17 @@ body {
 
 /* ── Level cards (juegos dentro del mundo) ── */
 .game-level-card {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 1rem 1.25rem; border-radius: 0.85rem;
-  background: #f8fafc; border: 1.5px solid var(--eq-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  border: 1.5px solid var(--eq-border);
   transition: all 0.15s;
 }
 .game-level-card:hover { border-color: var(--eq-primary-light); }
-.game-level-card.done { background: #f0fdf4; border-color: #a7f3d0; }
+.game-level-card.done  { background: #f0fdf4; border-color: #a7f3d0; }
 
 .game-level-card__number {
   width: 40px; height: 40px; border-radius: 50%;
@@ -1356,23 +1360,23 @@ body {
   font-weight: 800; font-size: 1rem; flex-shrink: 0;
   font-family: 'Montserrat', sans-serif;
 }
-.game-level-card.done .game-level-card__number { background: #10b981; font-size: 1.2rem; }
+.game-level-card.done   .game-level-card__number { background: #10b981; font-size: 1.2rem; }
+.game-level-card.locked .game-level-card__number { background: #cbd5e1; color: #fff; font-size: 1.1rem; }
 
-.game-level-card__info { flex: 1; }
+.game-level-card__info { flex: 1; min-width: 0; }
 .game-level-card__title { font-weight: 700; font-size: 0.92rem; color: var(--eq-text); }
-.game-level-card__desc { font-size: 0.78rem; color: var(--eq-text-muted); margin-top: 0.15rem; }
-.game-level-card__xp { font-size: 0.75rem; color: #92400e; font-weight: 700; background: #fef3c7; display: inline-block; padding: 0.1rem 0.5rem; border-radius: 1rem; margin-top: 0.3rem; }
+.game-level-card__desc  { font-size: 0.78rem; color: var(--eq-text-muted); margin-top: 0.15rem; }
+.game-level-card__xp    { font-size: 0.75rem; color: #92400e; font-weight: 700; background: #fef3c7; display: inline-block; padding: 0.1rem 0.5rem; border-radius: 1rem; margin-top: 0.3rem; }
 
-.game-level-card__btn { background: var(--eq-primary); color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.82rem; text-decoration: none; white-space: nowrap; }
+.game-level-card__btn { background: var(--eq-primary); color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.82rem; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
 .game-level-card__btn:hover { background: var(--eq-primary-dark); color: #fff; }
 .game-level-card__btn--replay { background: transparent; border: 1.5px solid var(--eq-primary); color: var(--eq-primary); padding: 0.35rem 0.9rem; font-size: 0.75rem; }
 .game-level-card__btn--replay:hover { background: #eff6ff; color: var(--eq-primary-dark); }
 .game-level-card__badge-done { font-size: 0.75rem; color: #10b981; font-weight: 700; white-space: nowrap; }
 
-/* Nivel aún bloqueado: se ve, pero apagado y sin botón de jugar */
+/* Nivel aún bloqueado */
 .game-level-card.locked { background: #f8fafc; border-color: var(--eq-border); opacity: 0.75; }
 .game-level-card.locked:hover { border-color: var(--eq-border); }
-.game-level-card.locked .game-level-card__number { background: #cbd5e1; color: #fff; font-size: 1.1rem; }
 .game-level-card__locked-note {
   font-size: 0.72rem;
   color: var(--eq-text-muted);
@@ -1380,6 +1384,29 @@ body {
   text-align: right;
   max-width: 9rem;
   line-height: 1.35;
+  flex-shrink: 0;
+}
+
+/* ── Responsive móvil: tarjetas de nivel ── */
+@media (max-width: 480px) {
+  .game-level-card {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .game-level-card__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .game-level-card__btn {
+    display: inline-block;
+  }
+
+  .game-level-card__locked-note {
+    text-align: left;
+    max-width: 100%;
+  }
 }
 
 /* ── Avatar preview ── */
@@ -4156,6 +4183,137 @@ body {
   font-size: 0.78rem;
   color: var(--eq-text-muted);
   margin: 0.7rem 0 0;
+}
+
+/* ─────────────────────────────────────────────────────
+   Controles digitales móvil (d-pad + botón de acción)
+   ───────────────────────────────────────────────────── */
+.bt-mobile-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.2rem 0.5rem;
+  gap: 1rem;
+  /* Fondo translúcido sobre el fondo oscuro del bt-screen */
+  background: rgba(0, 0, 0, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  /* Zona segura inferior en iPhone con notch */
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* ── D-pad ── */
+.bt-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  touch-action: none;
+}
+
+.bt-dpad__row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.bt-dpad__center {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+}
+
+.bt-dpad__btn {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.08s, transform 0.06s;
+  touch-action: none;
+  /* Sin outline nativo en móvil */
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.bt-dpad__btn:active,
+.bt-dpad__btn:focus-visible {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0.93);
+}
+
+/* ── Botón de acción (E) ── */
+.bt-action-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: default;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.06s;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* Activo: hay un banco al alcance */
+.bt-action-btn.is-active {
+  background: var(--eq-primary);
+  border-color: #6690dd;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(51, 102, 204, 0.7);
+  animation: btActionPulse 1.2s ease-in-out infinite;
+}
+
+.bt-action-btn.is-active:active {
+  transform: scale(0.91);
+  animation: none;
+  background: var(--eq-primary-dark);
+}
+
+.bt-action-btn__key {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.bt-action-btn__label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+@keyframes btActionPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(51, 102, 204, 0.6); }
+  50%       { box-shadow: 0 0 22px rgba(51, 102, 204, 0.95); }
+}
+
+/* En pantallas muy pequeñas (< 360px) achica un poco los botones */
+@media (max-width: 360px) {
+  .bt-dpad__btn   { width: 44px; height: 44px; font-size: 0.95rem; }
+  .bt-dpad__center { width: 38px; height: 38px; }
+  .bt-action-btn  { width: 68px; height: 68px; }
+  .bt-action-btn__key { font-size: 1.25rem; }
 }
 
 /* ─────────────────────────────────────────────────────

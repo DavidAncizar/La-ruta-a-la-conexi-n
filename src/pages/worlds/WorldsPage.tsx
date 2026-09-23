@@ -139,27 +139,30 @@ export default function WorldsPage() {
                             <div className="game-level-card__title">{game.title}</div>
                             <div className="game-level-card__desc">{game.description}</div>
                             <div className="game-level-card__xp">+{game.xp_reward} XP</div>
-                          </div>
 
-                          {isCompleted ? (
-                            <div className="d-flex flex-column align-items-end gap-1">
-                              <span className="game-level-card__badge-done">Completado</span>
-                              <Link
-                                to={`/game/${game.id}`}
-                                className="game-level-card__btn game-level-card__btn--replay"
-                              >
-                                🔁 Jugar de nuevo
-                              </Link>
+                            {/* Acción: dentro del bloque info para alinearse bien en móvil */}
+                            <div className="game-level-card__action mt-2">
+                              {isCompleted ? (
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
+                                  <span className="game-level-card__badge-done">✅ Completado</span>
+                                  <Link
+                                    to={`/game/${game.id}`}
+                                    className="game-level-card__btn game-level-card__btn--replay"
+                                  >
+                                    🔁 Jugar de nuevo
+                                  </Link>
+                                </div>
+                              ) : isUnlocked ? (
+                                <Link to={`/game/${game.id}`} className="game-level-card__btn">
+                                  Jugar ▶
+                                </Link>
+                              ) : (
+                                <span className="game-level-card__locked-note">
+                                  🔒 Termina el nivel {levelNumber - 1} para desbloquearlo
+                                </span>
+                              )}
                             </div>
-                          ) : isUnlocked ? (
-                            <Link to={`/game/${game.id}`} className="game-level-card__btn">
-                              Jugar
-                            </Link>
-                          ) : (
-                            <span className="game-level-card__locked-note">
-                              Termina el nivel {levelNumber - 1} para desbloquearlo
-                            </span>
-                          )}
+                          </div>
                         </div>
                       )
                     })}

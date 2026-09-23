@@ -17,6 +17,7 @@ import {
 } from './data/worldMap'
 import { distance, pointInRect } from './utils/geometry'
 import { usePlayerMovement } from './hooks/usePlayerMovement'
+import type { TouchDirections } from './hooks/usePlayerMovement'
 import { INITIAL_BANK1_STATE, INITIAL_BANK2_STATE } from './types'
 import type { BankOfTimeStage, BenchId, Bank1State, Bank2State } from './types'
 import BankIntro from './components/BankIntro'
@@ -24,6 +25,7 @@ import Scenery from './components/Scenery'
 import LevelCompletion from './components/LevelCompletion'
 import Bank1Mission from './components/bank1/Bank1Mission'
 import Bank2Mission from './components/bank2/Bank2Mission'
+import MobileControls from './components/MobileControls'
 
 // ─── Persistencia en sessionStorage ──────────────────────────────────────────
 // El estudiante va a salir de la aplicación para enseñar su habilidad a
@@ -133,6 +135,31 @@ export default function BancoDelTiempo({
   /** ¿Esa partida fue una repetición? (valor congelado) */
   const [finishedAsReplay, setFinishedAsReplay] = useState(false)
 
+  /**
+   * Detección de dispositivo táctil.
+   * Se usa para mostrar/ocultar el d-pad. Se detecta una sola vez al montar
+   * y también cuando el primer toque ocurre (cubre iPads con teclado externo).
+   */
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+  useEffect(() => {
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      setIsTouchDevice(true)
+    }
+    function onFirstTouch() {
+      setIsTouchDevice(true)
+      window.removeEventListener('touchstart', onFirstTouch)
+    }
+    window.addEventListener('touchstart', onFirstTouch, { passive: true })
+    return () => window.removeEventListener('touchstart', onFirstTouch)
+  }, [])
+
+  /**
+   * Ref al Set de direcciones táctiles activas.
+   * MobileControls escribe aquí; usePlayerMovement lo lee en el bucle rAF.
+   * No es estado React para no añadir latencia al movimiento.
+   */
+  const touchDirections = useRef<TouchDirections>(new Set())
+
   const navigate = useNavigate()
 
   const isReplay = attemptNumber > 1
@@ -185,6 +212,7 @@ export default function BancoDelTiempo({
     speed: PLAYER_SPEED,
     halfSize: PLAYER_HALF_SIZE,
     enabled: canWalk,
+    touchDirections,
   })
 
   /**
@@ -411,17 +439,30 @@ export default function BancoDelTiempo({
           >
             <span className="bt-prompt__title">🪑 BANCO DEL TIEMPO</span>
             <span className="bt-prompt__hint">
-              Presiona <strong>E</strong> para interactuar
+              {isTouchDevice
+                ? <>Pulsa <strong>E</strong> en los controles</>
+                : <>Presiona <strong>E</strong> para interactuar</>
+              }
             </span>
           </div>
         )}
       </div>
 
       {/* Recordatorio de controles bajo el escenario */}
-      <p className="bt-screen__controls">
-        Muévete con <strong>WASD</strong> o las <strong>flechas</strong> · Interactúa
-        con <strong>E</strong> o haciendo clic
-      </p>
+      {isTouchDevice ? (
+        /* Controles digitales en móvil */
+        <MobileControls
+          touchDirections={touchDirections}
+          canInteract={!!benchInRange}
+          onInteract={() => { if (benchInRange) openBench(benchInRange.id) }}
+        />
+      ) : (
+        /* Recordatorio de teclado en desktop */
+        <p className="bt-screen__controls">
+          Muévete con <strong>WASD</strong> o las <strong>flechas</strong> · Interactúa
+          con <strong>E</strong> o haciendo clic
+        </p>
+      )}
 
       {/* Misión del banco 1: "Comparte una habilidad" */}
       {stage === 'bank_1' && (
