@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabaseClient'
 import { xpForNextLevel, xpProgressPercent } from '@/lib/helpers'
@@ -8,6 +8,7 @@ import { buildProgression, findNextLevel } from '@/lib/progression'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
 import Footer from '@/components/layout/Footer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import GuideToast from '@/components/ui/GuideToast'
 import type { Game, StudentProgress } from '@/types'
 
 export default function DashboardPage() {
@@ -15,6 +16,7 @@ export default function DashboardPage() {
   const [games, setGames]               = useState<Game[]>([])
   const [progress, setProgress]         = useState<StudentProgress[]>([])
   const [loadingData, setLoadingData]   = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (profile) loadData()
@@ -53,6 +55,61 @@ export default function DashboardPage() {
   const worldsData = buildProgression(games, completedGameIds)
 
   const worldsCompleted = worldsData.filter(w => w.isComplete).length
+
+  // ── Tip contextual según el estado del progreso ──────────────────────────
+  // Se elige UN mensaje relevante según en qué punto está el estudiante.
+  // storageKey único por condición para que cerrarlo no oculte el siguiente
+  // mensaje cuando avance.
+  const guideToast = (() => {
+    // 1. Nunca ha jugado nada → invitar a empezar
+    if (completedGameIds.length === 0) {
+      return {
+        icon: '👋',
+        title: '¡Bienvenido a La ruta hacia la conexión!',
+        message: 'Para comenzar ve a la pestaña "🗺️ Mundos" y pulsa "Jugar ▶" en el primer nivel del Mundo 1. ¡Tu aventura empieza ahora!',
+        actionLabel: 'Ir a Mundos',
+        onAction: () => navigate('/worlds'),
+        storageKey: 'guide_dashboard_start',
+      }
+    }
+    // 2. Completó toda la ruta → felicitación y sugerencia de avatar
+    if (completedGameIds.length >= TOTAL_WORLDS * GAMES_PER_WORLD) {
+      return {
+        icon: '🏆',
+        title: '¡Completaste toda la ruta!',
+        message: 'Has terminado los 6 juegos. Revisa tu avatar en "🧑‍🎤 Avatar" — tienes todos los desbloqueados. También puedes ver tu posición en el ranking.',
+        actionLabel: 'Ver mi avatar',
+        onAction: () => navigate('/profile'),
+        storageKey: 'guide_dashboard_finished',
+      }
+    }
+    // 3. Completó un mundo completo → orientar al siguiente
+    const justFinishedWorld = worldsData.find(w => w.isComplete && w.order < TOTAL_WORLDS)
+    const nextWorld = justFinishedWorld
+      ? worldsData.find(w => w.order === justFinishedWorld.order + 1)
+      : null
+    if (nextWorld && nextWorld.isUnlocked && nextWorld.completed === 0) {
+      return {
+        icon: '🎉',
+        title: `¡Mundo ${justFinishedWorld!.order} completado!`,
+        message: `Excelente trabajo. El Mundo ${nextWorld.order} ya está desbloqueado. Ve a "🗺️ Mundos" y continúa con el primer juego del Mundo ${nextWorld.order}.`,
+        actionLabel: 'Ver Mundo ' + nextWorld.order,
+        onAction: () => navigate('/worlds'),
+        storageKey: `guide_dashboard_world${justFinishedWorld!.order}_done`,
+      }
+    }
+    // 4. Tiene juegos pendientes en un mundo desbloqueado → recordar continuar
+    const nextLevel = findNextLevel(worldsData)
+    if (nextLevel) {
+      return {
+        icon: '🎯',
+        title: '¡Tienes una misión pendiente!',
+        message: `Continúa con "${nextLevel.game.title}" en el Mundo ${nextLevel.game.world_id}. Pulsa "¡Jugar ahora!" aquí abajo o ve a "🗺️ Mundos".`,
+        storageKey: `guide_dashboard_next_${nextLevel.game.id}`,
+      }
+    }
+    return null
+  })()
 
   return (
     <div className="game-layout">
@@ -224,6 +281,19 @@ export default function DashboardPage() {
 
         </div>
       </main>
+
+      {/* ── Tip de orientación contextual ── */}
+      {guideToast && (
+        <GuideToast
+          icon={guideToast.icon}
+          title={guideToast.title}
+          message={guideToast.message}
+          actionLabel={guideToast.actionLabel}
+          onAction={guideToast.onAction}
+          storageKey={guideToast.storageKey}
+          delay={1200}
+        />
+      )}
 
       <Footer />
     </div>

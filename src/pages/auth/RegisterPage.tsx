@@ -403,7 +403,24 @@ export default function RegisterPage() {
             </div>
 
             <div className="text-center mt-3">
-              <Link to="/" className="text-white-50 small">
+              <Link
+                to="/"
+                style={{
+                  color: '#e67e22',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  textDecoration: 'none',
+                  opacity: 0.85,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.opacity = '1'
+                  ;(e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline'
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.opacity = '0.85'
+                  ;(e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none'
+                }}
+              >
                 ← Volver al inicio
               </Link>
             </div>
