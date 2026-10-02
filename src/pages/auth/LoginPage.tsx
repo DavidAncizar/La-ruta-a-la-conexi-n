@@ -195,10 +195,7 @@ export default function LoginPage() {
                     className="auth-link auth-link--small"
                     tabIndex={-1}
                     aria-label="Recuperar contraseña"
-                    onClick={() => {
-                      /* TODO: navegar a /forgot-password */
-                      alert('Recuperación de contraseña disponible próximamente.')
-                    }}
+                    onClick={() => { window.location.href = '/forgot-password' }}
                   >
                     ¿Olvidaste tu contraseña?
                   </button>

@@ -2,12 +2,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
 
 // Páginas públicas
-import LandingPage    from '@/pages/LandingPage'
-import LoginPage      from '@/pages/auth/LoginPage'
-import RegisterPage   from '@/pages/auth/RegisterPage'
-import NotFoundPage   from '@/pages/NotFoundPage'
-import AvatarDebug    from '@/pages/AvatarDebug'
-import EscudoDebug    from '@/pages/EscudoDebug'
+import LandingPage          from '@/pages/LandingPage'
+import LoginPage            from '@/pages/auth/LoginPage'
+import RegisterPage         from '@/pages/auth/RegisterPage'
+import ForgotPasswordPage   from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage    from '@/pages/auth/ResetPasswordPage'
+import NotFoundPage         from '@/pages/NotFoundPage'
+import AvatarDebug          from '@/pages/AvatarDebug'
+import EscudoDebug          from '@/pages/EscudoDebug'
 
 // Páginas protegidas
 import DashboardPage    from '@/pages/dashboard/DashboardPage'
@@ -23,9 +25,11 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         {/* ── Públicas ── */}
-        <Route path="/"          element={<LandingPage />} />
-        <Route path="/login"     element={<LoginPage />} />
-        <Route path="/register"  element={<RegisterPage />} />
+        <Route path="/"                  element={<LandingPage />} />
+        <Route path="/login"             element={<LoginPage />} />
+        <Route path="/register"          element={<RegisterPage />} />
+        <Route path="/forgot-password"   element={<ForgotPasswordPage />} />
+        <Route path="/reset-password"    element={<ResetPasswordPage />} />
 
         {/* ── Protegidas (cualquier usuario autenticado) ── */}
         <Route path="/dashboard" element={

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import type { Profile, AcademicPeriod } from '@/types'
-import { TOTAL_WORLDS, GAMES_PER_WORLD, WORLD_NAMES } from '@/lib/constants'
+import { TOTAL_WORLDS, GAMES_PER_WORLD, WORLD_NAMES, GRADES } from '@/lib/constants'
 
 // ─── Tipos auxiliares ─────────────────────────────────────────────────────────
 
@@ -142,9 +142,12 @@ export default function AdminPage() {
   }, [students])
 
   const uniqueClassrooms = useMemo(() => {
-    const set = new Set(students.map(s => s.classroom).filter(Boolean))
+    const source = filterGrade === 'all'
+      ? students
+      : students.filter(s => s.grade === filterGrade)
+    const set = new Set(source.map(s => s.classroom).filter(Boolean))
     return Array.from(set).sort() as string[]
-  }, [students])
+  }, [students, filterGrade])
 
   // ── Acciones ───────────────────────────────────────────────────────────────
 
@@ -450,11 +453,14 @@ export default function AdminPage() {
                   </div>
                   <div className="col-6 col-md-2">
                     <label className="form-label small fw-semibold">Grado</label>
-                    <select className="form-select form-select-sm" value={filterGrade} onChange={(e) => setFilterGrade(e.target.value)}>
+                    <select className="form-select form-select-sm" value={filterGrade} onChange={(e) => {
+                      setFilterGrade(e.target.value)
+                      setFilterClassroom('all')
+                    }}>
                       <option value="all">Todos</option>
-                      <option value="8">8°</option>
-                      <option value="9">9°</option>
-                      <option value="10">10°</option>
+                      {GRADES.map(g => (
+                        <option key={g} value={g}>{g}°</option>
+                      ))}
                     </select>
                   </div>
                   <div className="col-6 col-md-2">
