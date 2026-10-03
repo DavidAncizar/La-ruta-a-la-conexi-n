@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import PageWrapper from '@/components/layout/PageWrapper'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -15,8 +15,6 @@ import { supabase } from '@/lib/supabaseClient'
  * escucharlo y habilitar el formulario.
  */
 export default function ResetPasswordPage() {
-  const navigate = useNavigate()
-
   const [ready, setReady]       = useState(false)   // token válido detectado
   const [invalid, setInvalid]   = useState(false)   // token ausente o expirado
   const [password, setPassword] = useState('')
