@@ -16,66 +16,7 @@ import { buildProgression, findLevelStatus } from '@/lib/progression'
 import type { LevelStatus } from '@/lib/progression'
 import type { Game, GameResult } from '@/types'
 
-// ─── Unlock automático de piezas de avatar ────────────────────────────────────
-//
-// Al completar los 2 juegos de un mundo por primera vez, se inserta una fila
-// en student_avatar_pieces. La tabla tiene UNIQUE(student_id, avatar_piece_id,
-// academic_period_id) así que un segundo intento de INSERT se ignora sin error.
-//
-// Flujo:
-//   1. Se obtienen todos los juegos completados del estudiante (incluyendo el actual)
-//   2. Se cuenta cuántos juegos del mundo actual están completados
-//   3. Si son 2/2 → se busca la pieza de avatar que corresponde a ese mundo
-//   4. Se intenta INSERT (el UNIQUE evita duplicados silenciosamente)
 
-interface UnlockParams {
-  studentId:        string
-  gameWorldId:      number
-  academicPeriodId: number
-  completedGameIds: number[]
-  allGames:         { id: number; world_id: number }[]
-}
-
-async function tryUnlockAvatarPiece({
-  studentId,
-  gameWorldId,
-  academicPeriodId,
-  completedGameIds,
-  allGames,
-}: UnlockParams): Promise<void> {
-  // Juegos que pertenecen al mundo que acaba de jugarse
-  const worldGames = allGames.filter(g => g.world_id === gameWorldId)
-  if (worldGames.length === 0) return
-
-  // ¿Están todos completados?
-  const allDone = worldGames.every(g => completedGameIds.includes(g.id))
-  if (!allDone) return
-
-  // Buscar la pieza de avatar asociada a este mundo
-  const { data: piece } = await supabase
-    .from('avatar_pieces')
-    .select('id')
-    .eq('world_id', gameWorldId)
-    .limit(1)
-    .maybeSingle()
-
-  if (!piece) return
-
-  // Intentar insertar — el UNIQUE constraint evita duplicados sin lanzar error
-  // si se usa ON CONFLICT DO NOTHING (simulado con upsert ignoreSomeErrors)
-  const { error } = await supabase
-    .from('student_avatar_pieces')
-    .insert({
-      student_id:        studentId,
-      avatar_piece_id:   piece.id,
-      academic_period_id: academicPeriodId,
-    })
-
-  // El código 23505 es violación de UNIQUE — ya estaba desbloqueado, no es error
-  if (error && error.code !== '23505') {
-    console.warn('No se pudo desbloquear la pieza de avatar:', error.message)
-  }
-}
 
 /**
  * Extrae un mensaje de error legible sin importar la forma del error.
@@ -383,32 +324,7 @@ export default function GamePage() {
       // 4. Refrescar el perfil en el contexto global (XP visible en navbar, etc.)
       await refreshProfile()
 
-      // 5. Verificar si este juego completó un mundo y desbloquear la pieza de avatar
-      //    Solo se intenta en el primer intento (attemptNumber === 1) para no
-      //    duplicar unlocks al repetir juegos.
-      if (attemptNumber === 1 && academicPeriodId) {
-        await tryUnlockAvatarPiece({
-          studentId:         profile.id,
-          gameWorldId:       game.world_id,
-          academicPeriodId,
-          completedGameIds:  [...new Set([
-            // Juegos ya completados antes de esta partida
-            ...((await supabase
-              .from('student_progress')
-              .select('game_id')
-              .eq('student_id', profile.id)
-            ).data ?? []).map((r: { game_id: number }) => r.game_id),
-            game.id, // este juego que acaba de completarse
-          ])],
-          allGames: (await supabase
-            .from('games')
-            .select('id, world_id')
-            .eq('is_active', true)
-          ).data ?? [],
-        })
-      }
-
-      // 6. Avanzar el intento en memoria, sin recargar desde Supabase.
+      // 5. Avanzar el intento en memoria, sin recargar desde Supabase.
       //    Si el estudiante vuelve a jugar sin recargar la página, el
       //    siguiente INSERT necesita un attempt_number distinto: la tabla
       //    tiene UNIQUE (student_id, game_id, academic_period_id,

@@ -174,12 +174,12 @@ export default function AdminPage() {
     setDeleteError(null)
 
     try {
-      // 1. Piezas de avatar del estudiante
+      // 1. Limpieza de registros legados de avatar (si existen en BD)
       const { error: piecesErr } = await supabase
         .from('student_avatar_pieces')
         .delete()
         .eq('student_id', student.id)
-      if (piecesErr) throw new Error(`Piezas avatar: ${piecesErr.message}`)
+      if (piecesErr && piecesErr.code !== '42P01') throw new Error(`Avatar: ${piecesErr.message}`)
 
       // 2. Progreso del estudiante
       const { error: progressErr } = await supabase
@@ -234,7 +234,7 @@ export default function AdminPage() {
               Vas a eliminar permanentemente la cuenta de{' '}
               <strong>{deleteConfirm.full_name}</strong>.
               <br />
-              Se borrarán su perfil, todo su progreso y sus piezas de avatar.
+              Se borrarán su perfil, todo su progreso y su avatar configurado.
               <br />
               <span style={{ color: '#ef4444', fontWeight: 700 }}>Esta acción no se puede deshacer.</span>
             </p>

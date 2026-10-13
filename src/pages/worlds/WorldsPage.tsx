@@ -169,7 +169,7 @@ export default function WorldsPage() {
             🗺️ Mapa de Mundos
           </h2>
           <p className="text-muted mb-4">
-            Completa cada mundo para desbloquear el siguiente y ganar una pieza de tu avatar.
+            Completa cada mundo para desbloquear el siguiente y nuevos avatares para tu perfil.
           </p>
 
           <div className="d-flex flex-column gap-4">
