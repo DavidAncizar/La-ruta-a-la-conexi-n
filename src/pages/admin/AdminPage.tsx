@@ -45,6 +45,15 @@ export default function AdminPage() {
   // Error al archivar / reactivar (se muestra sobre la tabla de estudiantes)
   const [actionError, setActionError]   = useState<string | null>(null)
 
+  // Eliminación por grados (borrado por lotes)
+  const [bulkOpen, setBulkOpen]               = useState(false)
+  const [bulkGrades, setBulkGrades]           = useState<string[]>([])
+  const [bulkPeriod, setBulkPeriod]           = useState<number | 'all'>('all')
+  const [bulkConfirmText, setBulkConfirmText] = useState('')
+  const [bulkDeleting, setBulkDeleting]       = useState(false)
+  const [bulkError, setBulkError]             = useState<string | null>(null)
+  const [bulkResult, setBulkResult]           = useState<string | null>(null)
+
   // ── Cargar datos ────────────────────────────────────────────────────────────
   useEffect(() => { loadData() }, [])
 
@@ -106,6 +115,33 @@ export default function AdminPage() {
       return true
     })
   }, [students, filterPeriod, filterGrade, filterClassroom, filterStatus, searchTerm])
+
+  // ── Eliminación por grados: conteos y estudiantes afectados ─────────────
+  const bulkCountsByGrade = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const g of GRADES) counts[g] = 0
+    for (const s of students) {
+      if (!s.grade) continue
+      if (bulkPeriod !== 'all' && s.academic_period_id !== bulkPeriod) continue
+      counts[s.grade] = (counts[s.grade] ?? 0) + 1
+    }
+    return counts
+  }, [students, bulkPeriod])
+
+  const bulkTargets = useMemo(() => {
+    return students.filter(s =>
+      !!s.grade &&
+      bulkGrades.includes(s.grade) &&
+      (bulkPeriod === 'all' || s.academic_period_id === bulkPeriod)
+    )
+  }, [students, bulkGrades, bulkPeriod])
+
+  const bulkGradesLabel = [...bulkGrades]
+    .sort((a, b) => Number(a) - Number(b))
+    .map(g => `${g}°`)
+    .join(', ')
+
+  const bulkConfirmed = bulkConfirmText.trim().toUpperCase() === 'ELIMINAR'
 
   // ── Ranking: todos los estudiantes ordenados por XP desc ─────────────────
   const rankedStudents = useMemo(() => {
@@ -225,6 +261,80 @@ export default function AdminPage() {
     }
   }
 
+  // ── Eliminación por grados ─────────────────────────────────────────────────
+
+  function openBulk() {
+    setBulkGrades([])
+    setBulkPeriod('all')
+    setBulkConfirmText('')
+    setBulkError(null)
+    setBulkResult(null)
+    setBulkOpen(true)
+  }
+
+  function closeBulk() {
+    if (bulkDeleting) return
+    setBulkOpen(false)
+    setBulkError(null)
+  }
+
+  function toggleBulkGrade(grade: string) {
+    setBulkConfirmText('')
+    setBulkGrades(prev =>
+      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
+    )
+  }
+
+  /**
+   * Elimina a todos los estudiantes de los grados elegidos (y, si se eligió,
+   * de una generación concreta) con la función SQL admin_delete_students_by_grade
+   * (ver Docs/supabase-admin-delete.sql). Todo ocurre en una sola transacción.
+   */
+  async function handleBulkDelete() {
+    if (bulkTargets.length === 0 || !bulkConfirmed) return
+
+    setBulkDeleting(true)
+    setBulkError(null)
+
+    const targetIds = new Set(bulkTargets.map(s => s.id))
+    const gradesLabel = bulkGradesLabel
+
+    try {
+      const { data, error } = await supabase.rpc('admin_delete_students_by_grade', {
+        p_grades: bulkGrades,
+        p_period_id: bulkPeriod === 'all' ? null : bulkPeriod,
+      })
+
+      if (error) {
+        if (error.code === 'PGRST202' || error.message.includes('admin_delete_students_by_grade')) {
+          throw new Error(
+            'Falta ejecutar Docs/supabase-admin-delete.sql en Supabase (SQL Editor) ' +
+            'para habilitar la eliminación por grados.'
+          )
+        }
+        throw new Error(error.message)
+      }
+
+      const deleted = typeof data === 'number' ? data : targetIds.size
+
+      setStudents(prev => prev.filter(s => !targetIds.has(s.id)))
+      // Si el servidor borró una cantidad distinta a la que se veía en pantalla,
+      // se vuelve a cargar la lista para que quede exacta.
+      if (deleted !== targetIds.size) await loadData()
+
+      setBulkResult(
+        deleted === 0
+          ? 'No había estudiantes para eliminar con esa selección.'
+          : `Se eliminaron ${deleted} estudiante${deleted !== 1 ? 's' : ''} de ${gradesLabel}.`
+      )
+      setBulkOpen(false)
+    } catch (err) {
+      setBulkError(err instanceof Error ? err.message : 'Error desconocido al eliminar.')
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
   async function handleLogout() {
     await signOut()
     navigate('/login')
@@ -280,6 +390,123 @@ export default function AdminPage() {
                   <><span className="spinner-border spinner-border-sm me-1" /> Eliminando…</>
                 ) : (
                   '🗑️ Sí, eliminar'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════ MODAL: ELIMINAR POR GRADOS ════════ */}
+      {bulkOpen && (
+        <div className="admin-delete-overlay" onClick={closeBulk}>
+          <div
+            className="admin-bulk-modal"
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bulk-delete-title"
+          >
+            <div className="text-center">
+              <div className="admin-delete-modal__icon">🎓</div>
+              <h5 id="bulk-delete-title" className="admin-delete-modal__title">Eliminar por grados</h5>
+              <p className="small text-muted mb-3">
+                Elige los grados que quieres eliminar. Se borrarán las cuentas de todos sus estudiantes.
+              </p>
+            </div>
+
+            <p className="small fw-semibold mb-2">1. ¿Qué grados?</p>
+            <div className="admin-bulk-grades mb-3">
+              {GRADES.map(g => {
+                const selected = bulkGrades.includes(g)
+                const count = bulkCountsByGrade[g] ?? 0
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    className={`admin-bulk-grade ${selected ? 'is-selected' : ''}`}
+                    onClick={() => toggleBulkGrade(g)}
+                    disabled={bulkDeleting || (count === 0 && !selected)}
+                    aria-pressed={selected}
+                  >
+                    <div className="admin-bulk-grade__name">{g}°</div>
+                    <div className="admin-bulk-grade__count">
+                      {count} estudiante{count !== 1 && 's'}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <p className="small fw-semibold mb-2">
+              2. ¿De qué generación? <span className="text-muted fw-normal">(opcional)</span>
+            </p>
+            <select
+              className="form-select form-select-sm mb-3"
+              value={bulkPeriod === 'all' ? 'all' : bulkPeriod}
+              onChange={e => {
+                setBulkConfirmText('')
+                setBulkPeriod(e.target.value === 'all' ? 'all' : Number(e.target.value))
+              }}
+              disabled={bulkDeleting}
+              aria-label="Generación"
+            >
+              <option value="all">Todas las generaciones</option>
+              {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+
+            {bulkTargets.length > 0 ? (
+              <>
+                <div className="alert alert-danger py-2 small mb-3" role="alert">
+                  Vas a eliminar <strong>{bulkTargets.length}</strong> estudiante
+                  {bulkTargets.length !== 1 && 's'} de <strong>{bulkGradesLabel}</strong>.
+                  Se borrarán su perfil, progreso y avatar, y no podrán volver a entrar.{' '}
+                  <strong>Esta acción no se puede deshacer.</strong>
+                </div>
+
+                <label htmlFor="bulk-confirm" className="form-label small fw-semibold">
+                  3. Para confirmar, escribe <code>ELIMINAR</code>
+                </label>
+                <input
+                  id="bulk-confirm"
+                  type="text"
+                  className="form-control form-control-sm mb-3"
+                  value={bulkConfirmText}
+                  onChange={e => setBulkConfirmText(e.target.value)}
+                  placeholder="ELIMINAR"
+                  autoComplete="off"
+                  disabled={bulkDeleting}
+                />
+              </>
+            ) : (
+              <p className="small text-muted text-center mb-3">
+                Selecciona al menos un grado para continuar.
+              </p>
+            )}
+
+            {bulkError && (
+              <div className="alert alert-danger py-2 small mb-3" role="alert">{bulkError}</div>
+            )}
+
+            <div className="d-flex gap-2 justify-content-end">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={closeBulk}
+                disabled={bulkDeleting}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting || bulkTargets.length === 0 || !bulkConfirmed}
+              >
+                {bulkDeleting ? (
+                  <><span className="spinner-border spinner-border-sm me-1" /> Eliminando…</>
+                ) : (
+                  `🗑️ Eliminar ${bulkTargets.length || ''} estudiante${bulkTargets.length !== 1 ? 's' : ''}`
                 )}
               </button>
             </div>
@@ -445,7 +672,27 @@ export default function AdminPage() {
                   <h1 className="admin-main__title">Estudiantes</h1>
                   <p className="admin-main__desc">Consulta, archiva o elimina cuentas de estudiantes</p>
                 </div>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={openBulk}
+                  title="Eliminar a todos los estudiantes de uno o varios grados"
+                >
+                  🎓 Eliminar por grados
+                </button>
               </div>
+
+              {bulkResult && (
+                <div className="alert alert-success py-2 small mb-3 d-flex justify-content-between align-items-center" role="status">
+                  <span>✅ {bulkResult}</span>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Cerrar mensaje"
+                    onClick={() => setBulkResult(null)}
+                  />
+                </div>
+              )}
 
               {actionError && (
                 <div className="alert alert-danger py-2 small mb-3" role="alert">

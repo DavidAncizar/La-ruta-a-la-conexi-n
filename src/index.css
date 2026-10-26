@@ -9407,3 +9407,60 @@ body {
     transform: none;
   }
 }
+
+/* ================================================================
+   ADMIN — Eliminar por grados (borrado por lotes)
+   ================================================================ */
+
+.admin-bulk-modal {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.75rem 1.75rem 1.25rem;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: scaleUp 0.18s ease;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.admin-bulk-grades {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.admin-bulk-grade {
+  border: 2px solid var(--eq-border, #e2e8f0);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.admin-bulk-grade:hover:not(:disabled) {
+  border-color: #fca5a5;
+}
+.admin-bulk-grade:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.admin-bulk-grade.is-selected {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+.admin-bulk-grade__name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+.admin-bulk-grade__count {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+@media (max-width: 480px) {
+  .admin-bulk-grades { grid-template-columns: repeat(2, 1fr); }
+}

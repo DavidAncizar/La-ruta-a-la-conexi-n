@@ -44,7 +44,7 @@ function mk(file: string, label: string, world: CharacterWorld): CharacterOption
   }
 }
 
-// ─── Catálogo completo (52 personajes) ────────────────────────────────────────
+// ─── Catálogo completo (57 personajes) ────────────────────────────────────────
 
 export const CHARACTERS: CharacterOption[] = [
   // ══ MUNDO 1 — 4 avatares iniciales, siempre disponibles ══
@@ -58,6 +58,7 @@ export const CHARACTERS: CharacterOption[] = [
   mk('segundo_mundo_abogado_blanco.jpg', 'Abogado', 2),
   mk('segundo_mundo_abogado_morena.jpg', 'Abogada', 2),
   mk('segundo_mundo_abogado_moreno.jpg', 'Abogado', 2),
+  mk('segundo_mundo_rubia_ambiental.jpg', 'Ambiental', 2),
   mk('segundo_mundo_astronauta_blanco.jpg', 'Astronauta', 2),
   mk('segundo_mundo_astronauta_blanlca.jpg', 'Astronauta', 2),
   mk('segundo_mundo_astronauta_morena.jpg', 'Astronauta', 2),
