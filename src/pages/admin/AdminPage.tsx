@@ -42,6 +42,9 @@ export default function AdminPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<StudentRow | null>(null)
   const [deleteError, setDeleteError]   = useState<string | null>(null)
 
+  // Error al archivar / reactivar (se muestra sobre la tabla de estudiantes)
+  const [actionError, setActionError]   = useState<string | null>(null)
+
   // ── Cargar datos ────────────────────────────────────────────────────────────
   useEffect(() => { loadData() }, [])
 
@@ -151,49 +154,66 @@ export default function AdminPage() {
 
   // ── Acciones ───────────────────────────────────────────────────────────────
 
+  /**
+   * Archiva o reactiva a un estudiante.
+   *
+   * Con RLS, un UPDATE que ninguna política permite NO devuelve error: simplemente
+   * afecta 0 filas. Por eso se pide `.select('id')` y se comprueba que realmente
+   * se actualizó una fila antes de cambiar la pantalla.
+   */
   async function handleToggleStatus(studentId: string, currentStatus: boolean) {
-    const { error } = await supabase
+    setActionError(null)
+
+    const { data, error } = await supabase
       .from('profiles')
       .update({ is_active: !currentStatus })
       .eq('id', studentId)
-    if (!error) {
-      setStudents(prev =>
-        prev.map(s => s.id === studentId ? { ...s, is_active: !currentStatus } : s)
+      .select('id')
+
+    if (error || !data || data.length === 0) {
+      console.error('No se pudo cambiar el estado del estudiante:', error)
+      setActionError(
+        error
+          ? `No se pudo cambiar el estado: ${error.message}`
+          : 'No se pudo cambiar el estado: la base de datos no permitió la operación. ' +
+            'Revisa que se haya ejecutado Docs/supabase-admin-delete.sql.'
       )
+      return
     }
+
+    setStudents(prev =>
+      prev.map(s => s.id === studentId ? { ...s, is_active: !currentStatus } : s)
+    )
   }
 
   /**
-   * Eliminación en cascada (opción A — frontend con anon key).
-   * Borra: student_avatar_pieces → student_progress → profiles
-   * El usuario de auth queda huérfano pero no puede iniciar sesión
-   * porque ProtectedRoute verifica la existencia del profile.
+   * Eliminación de un estudiante mediante la función SQL admin_delete_student
+   * (ver Docs/supabase-admin-delete.sql). La función verifica en el servidor
+   * que quien llama es administrador y borra, en una sola transacción:
+   * student_avatar_pieces → student_progress → profiles → auth.users.
+   *
+   * Antes se borraba tabla por tabla desde el cliente, pero no existen
+   * políticas RLS de DELETE, así que Supabase respondía "éxito" sin borrar
+   * nada y la fila solo desaparecía de la pantalla.
    */
   async function handleDeleteStudent(student: StudentRow) {
     setDeletingId(student.id)
     setDeleteError(null)
 
     try {
-      // 1. Limpieza de registros legados de avatar (si existen en BD)
-      const { error: piecesErr } = await supabase
-        .from('student_avatar_pieces')
-        .delete()
-        .eq('student_id', student.id)
-      if (piecesErr && piecesErr.code !== '42P01') throw new Error(`Avatar: ${piecesErr.message}`)
-
-      // 2. Progreso del estudiante
-      const { error: progressErr } = await supabase
-        .from('student_progress')
-        .delete()
-        .eq('student_id', student.id)
-      if (progressErr) throw new Error(`Progreso: ${progressErr.message}`)
-
-      // 3. Perfil del estudiante (última fila — FK constraints ya resueltas)
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', student.id)
-      if (profileErr) throw new Error(`Perfil: ${profileErr.message}`)
+      const { error: deleteErr } = await supabase.rpc('admin_delete_student', {
+        p_student_id: student.id,
+      })
+      if (deleteErr) {
+        // PGRST202 = la función no existe todavía en la base de datos
+        if (deleteErr.code === 'PGRST202' || deleteErr.message.includes('admin_delete_student')) {
+          throw new Error(
+            'Falta ejecutar Docs/supabase-admin-delete.sql en Supabase (SQL Editor) ' +
+            'para habilitar la eliminación de cuentas.'
+          )
+        }
+        throw new Error(deleteErr.message)
+      }
 
       // Actualizar estado local sin recargar toda la tabla
       setStudents(prev => prev.filter(s => s.id !== student.id))
@@ -426,6 +446,12 @@ export default function AdminPage() {
                   <p className="admin-main__desc">Consulta, archiva o elimina cuentas de estudiantes</p>
                 </div>
               </div>
+
+              {actionError && (
+                <div className="alert alert-danger py-2 small mb-3" role="alert">
+                  {actionError}
+                </div>
+              )}
 
               {/* Filtros */}
               <div className="admin-filters mb-3">
