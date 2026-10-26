@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { WORLD_NAMES, GAMES_PER_WORLD } from '@/lib/constants'
 import { buildProgression } from '@/lib/progression'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
+import SupportButton from '@/components/ui/SupportButton'
 import Footer from '@/components/layout/Footer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import GuideToast from '@/components/ui/GuideToast'
@@ -63,7 +64,7 @@ export default function WorldsPage() {
       return {
         icon: '🏆',
         title: '¡Ruta completada!',
-        message: 'Has terminado los 3 mundos. Ahora ve a "🧑‍🎤 Avatar" para ver todos tus avatares desbloqueados, o mira el ranking para ver tu posición.',
+        message: 'Terminaste los 3 mundos. Ve a "🧑‍🎤 Avatar" para personalizar tu avatar con todos los que desbloqueaste, o mira el ranking para ver tu posición.',
         actionLabel: 'Ver mi avatar',
         onAction: () => navigate('/profile'),
         storageKey: 'guide_worlds_all_done',
@@ -76,7 +77,7 @@ export default function WorldsPage() {
       return {
         icon: '🌐',
         title: '¡Empieza por el Mundo 1!',
-        message: 'Pulsa "Jugar ▶" en el primer nivel del Mundo 1 para arrancar tu aventura. Los demás mundos se irán desbloqueando al completar los juegos.',
+        message: 'Pulsa "Jugar ▶" en el primer nivel del Mundo 1. Los demás se desbloquean al completar los juegos. Cada juego se hace con un amigo, en grupo o hablando por redes, y tiene un botón "❓ ¿Cómo se juega?" para ayudarte.',
         storageKey: 'guide_worlds_w1_start',
       }
     }
@@ -86,7 +87,7 @@ export default function WorldsPage() {
       return {
         icon: '💡',
         title: 'Completa el Mundo 1',
-        message: 'Ya terminaste el nivel 1 del Mundo 1. Ahora juega el nivel 2 para completarlo y desbloquear el Mundo 2.',
+        message: 'Ya terminaste el nivel 1. Ahora pulsa "Jugar ▶" en el nivel 2 para completar el Mundo 1 y desbloquear el Mundo 2. También puedes personalizar tu avatar en "🧑‍🎤 Avatar".',
         storageKey: 'guide_worlds_w1_half',
       }
     }
@@ -97,7 +98,7 @@ export default function WorldsPage() {
       return {
         icon: '🔗',
         title: '¡Mundo 2 desbloqueado!',
-        message: 'Excelente. El Mundo 2 ya está disponible. Desplázate hacia abajo y pulsa "Jugar ▶" en su primer nivel para continuar.',
+        message: 'Excelente. Baja en esta pantalla y pulsa "Jugar ▶" en el primer nivel del Mundo 2. Ya tienes nuevos avatares para personalizar el tuyo en "🧑‍🎤 Avatar". Recuerda jugar con un amigo o por redes.',
         storageKey: 'guide_worlds_w2_start',
       }
     }
@@ -107,7 +108,7 @@ export default function WorldsPage() {
       return {
         icon: '⏱️',
         title: 'Un juego más en el Mundo 2',
-        message: 'Ya llevas un juego en el Mundo 2. Completa el segundo para desbloquear el Mundo 3, el último de la ruta.',
+        message: 'Ya llevas un juego en el Mundo 2. Pulsa "Jugar ▶" en el segundo para desbloquear el Mundo 3, el último de la ruta.',
         storageKey: 'guide_worlds_w2_half',
       }
     }
@@ -118,7 +119,7 @@ export default function WorldsPage() {
       return {
         icon: '✨',
         title: '¡Último mundo desbloqueado!',
-        message: 'Estás en el Mundo 3, el final de la ruta. Completa sus 2 juegos para terminar la aventura y ver tu resultado final.',
+        message: 'Estás en el Mundo 3, el final de la ruta. Pulsa "Jugar ▶" en el primer nivel y completa sus 2 juegos. Si te trabas, usa "❓ ¿Cómo se juega?" dentro del juego.',
         storageKey: 'guide_worlds_w3_start',
       }
     }
@@ -146,6 +147,7 @@ export default function WorldsPage() {
               <div className="game-navbar__name">{profile.full_name}</div>
               <div className="game-navbar__info">Nivel {profile.level} · ⚡ {profile.xp} XP</div>
             </div>
+            <SupportButton />
           </div>
           <button className="btn btn-outline-light btn-sm" onClick={() => signOut()}>Salir</button>
         </div>
@@ -171,6 +173,18 @@ export default function WorldsPage() {
           <p className="text-muted mb-4">
             Completa cada mundo para desbloquear el siguiente y nuevos avatares para tu perfil.
           </p>
+
+          <div className="how-to-play mb-4" role="note">
+            <p className="how-to-play__title">▶ ¿Cómo empiezo a jugar?</p>
+            <ul className="how-to-play__list">
+              <li>Aquí en <strong>Mundos</strong>, pulsa <strong>Jugar ▶</strong> en el nivel que quieras.</li>
+              <li>Para ir directo al juego que te toca, usa <strong>¡Jugar ahora!</strong> en 🏠 Inicio.</li>
+              <li>
+                Cuando termines un juego, pulsa <strong>🔁 Jugar de nuevo</strong>: ganas más XP,
+                se acumula y te acerca al <strong>podio del ranking</strong> 🏆.
+              </li>
+            </ul>
+          </div>
 
           <div className="d-flex flex-column gap-4">
             {worldsData.map((w) => (
@@ -233,7 +247,7 @@ export default function WorldsPage() {
                                     to={`/game/${game.id}`}
                                     className="game-level-card__btn game-level-card__btn--replay"
                                   >
-                                    🔁 Jugar de nuevo
+                                    🔁 Jugar de nuevo · +XP para el podio
                                   </Link>
                                 </div>
                               ) : isUnlocked ? (

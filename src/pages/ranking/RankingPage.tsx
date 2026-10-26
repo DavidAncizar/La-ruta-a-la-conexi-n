@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabaseClient'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
+import SupportButton from '@/components/ui/SupportButton'
 import Footer from '@/components/layout/Footer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
@@ -123,6 +124,7 @@ export default function RankingPage() {
               <div className="game-navbar__name">{profile.full_name}</div>
               <div className="game-navbar__info">Nivel {profile.level} · ⚡ {profile.xp} XP</div>
             </div>
+            <SupportButton />
           </div>
           <button className="btn btn-outline-light btn-sm" onClick={() => signOut()}>Salir</button>
         </div>

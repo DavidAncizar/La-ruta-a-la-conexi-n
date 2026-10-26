@@ -9557,3 +9557,447 @@ body {
   .av-group__grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
   .av-groups-scroll { max-height: 420px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AYUDA DE JUEGO — banner social + modal "¿Cómo se juega?"
+═══════════════════════════════════════════════════════════════ */
+.gh-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.75rem;
+}
+.gh-banner__icon { font-size: 1.4rem; flex-shrink: 0; }
+.gh-banner__text {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #1e3a8a;
+}
+.gh-banner__btn {
+  flex-shrink: 0;
+  background: var(--eq-primary, #3366CC);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.gh-banner__btn:hover { background: var(--eq-primary-dark, #1a3f80); transform: translateY(-1px); }
+.gh-banner__btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+.gh-modal { display: flex; flex-direction: column; max-height: 90vh; }
+.gh-modal__emoji { font-size: 1.6rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.gh-modal__body { padding: 1rem 1.25rem 0.25rem; overflow-y: auto; flex: 1 1 auto; }
+.gh-modal__goal { font-size: 0.9rem; color: #1e293b; margin: 0 0 0.85rem; line-height: 1.5; }
+.gh-modal__social {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 0.85rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+.gh-modal__social-title { margin: 0 0 0.3rem; font-weight: 800; font-size: 0.88rem; color: #1e3a8a; }
+.gh-modal__social-text { margin: 0 0 0.4rem; font-size: 0.82rem; line-height: 1.5; color: #1e40af; }
+.gh-modal__social-text--game { margin: 0; font-weight: 600; }
+.gh-modal__heading {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin: 0.25rem 0 0.6rem;
+}
+.gh-modal__steps { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.gh-modal__step { display: flex; align-items: flex-start; gap: 0.65rem; }
+.gh-modal__step-num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--gov-blue, #3366CC);
+  color: #fff;
+  font-size: 0.75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.gh-modal__step-text { font-size: 0.86rem; line-height: 1.45; color: #334155; }
+.gh-modal__tips { margin: 0 0 0.5rem; padding-left: 1.2rem; font-size: 0.83rem; line-height: 1.5; color: #475569; }
+.gh-modal__tips li { margin-bottom: 0.25rem; }
+.gh-modal__footer { border-top: 1px solid #e2e8f0; margin-top: 0.5rem; flex-shrink: 0; }
+
+@media (max-width: 575.98px) {
+  .gh-banner__btn { width: 100%; }
+}
+
+/* ── Modal en 2 columnas: cabe en una sola pantalla en escritorio ── */
+.gh-modal { max-width: 860px; width: 100%; }
+.gh-modal__cols { display: grid; grid-template-columns: 1fr; gap: 0 1.25rem; }
+.gh-modal__social { margin-bottom: 0.75rem; }
+@media (min-width: 768px) {
+  .gh-modal__cols { grid-template-columns: 1.1fr 1fr; }
+  .gh-modal__body { overflow-y: visible; }
+}
+@media (max-height: 720px) and (min-width: 768px) {
+  .gh-modal__body { overflow-y: auto; }
+}
+
+/* ── Laterales fijos con la ayuda (pantallas anchas) ── */
+.gh-layout { display: block; }
+.gh-side { display: none; }
+
+@media (min-width: 1280px) {
+  .gh-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 720px) minmax(220px, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    padding: 0 1.25rem;
+  }
+  .gh-center { width: 100%; }
+  .gh-side {
+    display: block;
+    position: sticky;
+    top: 1rem;
+    max-width: 320px;
+  }
+  .gh-layout > .gh-side:first-child { justify-self: end; }
+  .gh-layout > .gh-side:last-child  { justify-self: start; }
+  /* El banner superior sobra cuando los laterales están visibles */
+  .gh-banner { display: none; }
+}
+
+.gh-side__card {
+  background: #fff;
+  border: 1.5px solid #dbeafe;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.9rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+.gh-side__card--social { background: #eff6ff; border-color: #93c5fd; }
+.gh-side__title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #1e3a8a;
+  margin: 0 0 0.5rem;
+}
+.gh-side__goal { font-size: 0.8rem; line-height: 1.45; color: #334155; margin: 0 0 0.7rem; }
+.gh-side__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.gh-side__step { display: flex; gap: 0.5rem; font-size: 0.8rem; line-height: 1.4; color: #334155; }
+.gh-side__num {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--gov-blue, #3366CC);
+  color: #fff;
+  font-size: 0.7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.gh-side__chips { list-style: none; margin: 0 0 0.6rem; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.gh-side__chips li {
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e40af;
+}
+.gh-side__text { font-size: 0.8rem; line-height: 1.45; color: #1e40af; margin: 0; }
+.gh-side__tips { margin: 0; padding-left: 1.1rem; font-size: 0.78rem; line-height: 1.45; color: #475569; }
+.gh-side__tips li { margin-bottom: 0.3rem; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CÓMO JUGAR + JUGAR DE NUEVO
+═══════════════════════════════════════════════════════════════ */
+.how-to-play {
+  background: #eff6ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: 1rem;
+  padding: 0.85rem 1.1rem;
+}
+.how-to-play__title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1e3a8a;
+  margin: 0 0 0.4rem;
+}
+.how-to-play__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #1e40af;
+}
+.how-to-play__list li { margin-bottom: 0.25rem; }
+.how-to-play__list a { color: inherit; }
+
+.replay-tip {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: #fffbeb;
+  border: 2px solid #fcd34d;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+.replay-tip__icon { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
+.replay-tip__title { margin: 0 0 0.2rem; font-weight: 800; font-size: 0.92rem; color: #92400e; }
+.replay-tip__text  { margin: 0; font-size: 0.84rem; line-height: 1.45; color: #78350f; }
+.replay-tip--compact { padding: 0.7rem 0.8rem; margin: 0 0 0.9rem; }
+.replay-tip--compact .replay-tip__icon { font-size: 1.3rem; }
+.replay-tip--compact .replay-tip__title { font-size: 0.85rem; }
+.replay-tip--compact .replay-tip__text  { font-size: 0.78rem; }
+
+/* ── Botón "¿Cómo se juega?" más destacado en móvil/tablet ── */
+.gh-banner { background: #dbeafe; border-color: #60a5fa; }
+.gh-banner__text { font-size: 0.9rem; font-weight: 600; }
+.gh-banner__btn {
+  background: #facc15;
+  color: #1e293b;
+  font-size: 0.95rem;
+  padding: 0.65rem 1.1rem;
+  box-shadow: 0 3px 10px rgba(250, 204, 21, 0.45);
+  animation: gh-btn-pulse 2.4s ease-in-out infinite;
+}
+.gh-banner__btn:hover { background: #eab308; }
+@keyframes gh-btn-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-banner__btn { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   APOYO EMOCIONAL — botón del header y pestaña /support
+═══════════════════════════════════════════════════════════════ */
+.game-navbar .container > div:first-child { flex-wrap: wrap; row-gap: 0.4rem; }
+
+.support-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.support-btn:hover { background: rgba(255, 255, 255, 0.28); color: #fff; transform: translateY(-1px); }
+.support-btn:focus-visible { outline: 3px solid #fde68a; outline-offset: 2px; }
+.support-btn--active { background: #fff; color: var(--eq-primary-dark, #1a3f80); border-color: #fff; }
+.support-btn--active:hover { background: #fff; color: var(--eq-primary-dark, #1a3f80); }
+
+@media (max-width: 575.98px) {
+  .support-btn { font-size: 0.74rem; padding: 0.3rem 0.7rem; }
+}
+
+.support-hero {
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  border: 1.5px solid #c7d2fe;
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+.support-hero__icon { font-size: 2.6rem; line-height: 1; margin-bottom: 0.5rem; }
+.support-hero__title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 0.75rem;
+}
+.support-hero__text {
+  font-size: 0.97rem;
+  line-height: 1.6;
+  color: #334155;
+  max-width: 560px;
+  margin: 0 auto 0.75rem;
+}
+
+.support-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.75rem;
+  background: var(--eq-primary, #3366CC);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 2rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(51, 102, 204, 0.35);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.support-cta:hover { background: var(--eq-primary-dark, #1a3f80); color: #fff; transform: translateY(-2px); }
+.support-cta:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+.support-cta__sub { font-size: 0.72rem; font-weight: 600; opacity: 0.85; }
+.support-cta--disabled {
+  background: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.support-cta--disabled:hover { background: #94a3b8; transform: none; }
+
+.support-heading {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin: 0 0 0.75rem;
+}
+.support-steps { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.support-step {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  background: #fff;
+  border: 1.5px solid var(--eq-border, #e2e8f0);
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+}
+.support-step__num {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--eq-primary, #3366CC);
+  color: #fff;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.support-step p { margin: 0.1rem 0 0; font-size: 0.88rem; color: #475569; line-height: 1.5; }
+
+.support-reassure {
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 1rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+.support-reassure__title { margin: 0 0 0.4rem; font-weight: 800; color: #065f46; }
+.support-reassure ul { margin: 0; padding-left: 1.2rem; font-size: 0.88rem; line-height: 1.6; color: #047857; }
+
+.support-urgent {
+  background: #fff1f2;
+  border: 1.5px solid #fecdd3;
+  border-radius: 1rem;
+  padding: 0.9rem 1.1rem;
+}
+.support-urgent__title { margin: 0 0 0.3rem; font-weight: 800; color: #9f1239; }
+.support-urgent__text { margin: 0 0 0.6rem; font-size: 0.86rem; color: #881337; line-height: 1.5; }
+.support-urgent__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.support-urgent__list li { display: flex; gap: 0.65rem; align-items: center; font-size: 0.84rem; color: #881337; }
+.support-urgent__number {
+  flex-shrink: 0;
+  background: #be123c;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.support-urgent__number:hover { background: #9f1239; color: #fff; }
+
+/* ── Botón de apoyo: más notorio (relleno cálido que resalta sobre el header azul) ── */
+.support-btn {
+  background: linear-gradient(135deg, #ff6b8b 0%, #f43f5e 100%);
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 0 rgba(255, 107, 139, 0.7), 0 3px 10px rgba(0, 0, 0, 0.25);
+  animation: support-btn-glow 2.6s ease-out infinite;
+}
+.support-btn:hover {
+  background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+  color: #fff;
+  transform: translateY(-2px) scale(1.03);
+}
+.support-btn > span[aria-hidden="true"] { font-size: 1.15rem; line-height: 1; }
+.support-btn--active {
+  background: #fff;
+  color: #be123c;
+  border-color: #fff;
+  animation: none;
+}
+.support-btn--active:hover { background: #fff; color: #be123c; }
+
+@keyframes support-btn-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 107, 139, 0.65), 0 3px 10px rgba(0, 0, 0, 0.25); }
+  70%  { box-shadow: 0 0 0 12px rgba(255, 107, 139, 0), 0 3px 10px rgba(0, 0, 0, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 107, 139, 0), 0 3px 10px rgba(0, 0, 0, 0.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .support-btn { animation: none; }
+}
+@media (max-width: 575.98px) {
+  .support-btn { font-size: 0.82rem; padding: 0.42rem 0.9rem; }
+}
+
+/* ── Botón de apoyo: paleta institucional (azul GOV.CO / azul oscuro del footer / amarillo) ── */
+.support-btn {
+  background: #1a2540;                       /* mismo azul oscuro del footer */
+  color: #fff;
+  border: 1.5px solid var(--gov-yellow);     /* amarillo Colombia, igual que el badge de nivel */
+  padding: 0.32rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 0.4rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  animation: none;
+}
+.support-btn > span[aria-hidden="true"] { font-size: 0.95rem; }
+.support-btn:hover {
+  background: var(--gov-yellow);
+  color: #1a2540;
+  transform: translateY(-1px);
+}
+.support-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.support-btn--active,
+.support-btn--active:hover {
+  background: #fff;
+  color: var(--gov-blue-dark);
+  border-color: #fff;
+}
+@media (max-width: 575.98px) {
+  .support-btn { font-size: 0.74rem; padding: 0.28rem 0.7rem; }
+}
+
+/* ── Botón de apoyo: relleno amarillo-naranja (sin negro), texto azul institucional ── */
+.support-btn {
+  background: linear-gradient(135deg, #FFCC00 0%, #FFA726 100%);
+  color: var(--gov-blue-dark);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.support-btn:hover {
+  background: linear-gradient(135deg, #FFD83D 0%, #FFB74D 100%);
+  color: var(--gov-blue-dark);
+}
+.support-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.support-btn--active,
+.support-btn--active:hover {
+  background: #fff;
+  color: var(--gov-blue-dark);
+  border-color: #fff;
+}

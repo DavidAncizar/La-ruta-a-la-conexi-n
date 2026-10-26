@@ -18,6 +18,7 @@ import WorldDetailPage  from '@/pages/worlds/WorldDetailPage'
 import GamePage         from '@/pages/game/GamePage'
 import ProfilePage      from '@/pages/profile/ProfilePage'
 import RankingPage      from '@/pages/ranking/RankingPage'
+import SupportPage      from '@/pages/support/SupportPage'
 import AdminPage        from '@/pages/admin/AdminPage'
 
 export default function AppRoutes() {
@@ -49,6 +50,10 @@ export default function AppRoutes() {
         } />
         <Route path="/ranking" element={
           <ProtectedRoute><RankingPage /></ProtectedRoute>
+        } />
+
+        <Route path="/support" element={
+          <ProtectedRoute><SupportPage /></ProtectedRoute>
         } />
 
         {/* ── Solo admin ── */}

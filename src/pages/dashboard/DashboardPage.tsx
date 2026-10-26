@@ -6,6 +6,7 @@ import { xpForNextLevel, xpProgressPercent } from '@/lib/helpers'
 import { WORLD_NAMES, TOTAL_WORLDS, GAMES_PER_WORLD } from '@/lib/constants'
 import { buildProgression, findNextLevel } from '@/lib/progression'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
+import SupportButton from '@/components/ui/SupportButton'
 import Footer from '@/components/layout/Footer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import GuideToast from '@/components/ui/GuideToast'
@@ -66,7 +67,7 @@ export default function DashboardPage() {
       return {
         icon: '👋',
         title: '¡Bienvenido a La ruta hacia la conexión!',
-        message: 'Para comenzar ve a la pestaña "🗺️ Mundos" y pulsa "Jugar ▶" en el primer nivel del Mundo 1. ¡Tu aventura empieza ahora!',
+        message: 'Paso 1: toca "Ir a Mundos". Paso 2: pulsa "Jugar ▶" en el primer nivel del Mundo 1. Tip: los juegos se hacen con un amigo, en grupo o hablando por redes. Dentro de cada juego encuentras el botón "❓ ¿Cómo se juega?".',
         actionLabel: 'Ir a Mundos',
         onAction: () => navigate('/worlds'),
         storageKey: 'guide_dashboard_start',
@@ -77,7 +78,7 @@ export default function DashboardPage() {
       return {
         icon: '🏆',
         title: '¡Completaste toda la ruta!',
-        message: 'Has terminado los 6 juegos. Revisa tu avatar en "🧑‍🎤 Avatar" — tienes todos los desbloqueados. También puedes ver tu posición en el ranking.',
+        message: 'Terminaste los 6 juegos. Ahora puedes personalizar tu avatar en "🧑‍🎤 Avatar" (ya tienes todos desbloqueados) y ver tu posición en "🏆 Ranking". También puedes repetir cualquier juego con otra persona.',
         actionLabel: 'Ver mi avatar',
         onAction: () => navigate('/profile'),
         storageKey: 'guide_dashboard_finished',
@@ -92,7 +93,7 @@ export default function DashboardPage() {
       return {
         icon: '🎉',
         title: `¡Mundo ${justFinishedWorld!.order} completado!`,
-        message: `Excelente trabajo. El Mundo ${nextWorld.order} ya está desbloqueado. Ve a "🗺️ Mundos" y continúa con el primer juego del Mundo ${nextWorld.order}.`,
+        message: `Excelente trabajo. Ya desbloqueaste nuevos avatares: puedes personalizar el tuyo en "🧑‍🎤 Avatar". Para seguir, ve a "🗺️ Mundos" y pulsa "Jugar ▶" en el primer juego del Mundo ${nextWorld.order}. Recuerda jugarlo con un amigo o por redes.`,
         actionLabel: 'Ver Mundo ' + nextWorld.order,
         onAction: () => navigate('/worlds'),
         storageKey: `guide_dashboard_world${justFinishedWorld!.order}_done`,
@@ -104,7 +105,7 @@ export default function DashboardPage() {
       return {
         icon: '🎯',
         title: '¡Tienes una misión pendiente!',
-        message: `Continúa con "${nextLevel.game.title}" en el Mundo ${nextLevel.game.world_id}. Pulsa "¡Jugar ahora!" aquí abajo o ve a "🗺️ Mundos".`,
+        message: `Sigue con "${nextLevel.game.title}" (Mundo ${nextLevel.game.world_id}). Pulsa "¡Jugar ahora!" aquí abajo. Si no sabes cómo funciona, dentro del juego toca "❓ ¿Cómo se juega?". Recuerda: se juega con un amigo, en grupo o por redes.`,
         storageKey: `guide_dashboard_next_${nextLevel.game.id}`,
       }
     }
@@ -124,6 +125,7 @@ export default function DashboardPage() {
                 Grado {profile.grade}° · {profile.classroom}
               </div>
             </div>
+            <SupportButton />
           </div>
 
           <div className="d-flex align-items-center gap-3">
@@ -195,6 +197,22 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ═══ CÓMO JUGAR + JUGAR DE NUEVO ═══ */}
+          <div className="how-to-play mb-4" role="note">
+            <p className="how-to-play__title">▶ ¿Cómo juego?</p>
+            <ul className="how-to-play__list">
+              <li>
+                Ve a <Link to="/worlds"><strong>🗺️ Mundos</strong></Link> y pulsa <strong>Jugar ▶</strong>,
+                o usa el botón <strong>¡Jugar ahora!</strong> de abajo para ir directo a tu juego actual.
+              </li>
+              <li>Todos los juegos se hacen con un amigo, en grupo o hablando por redes.</li>
+              <li>
+                ¿Ya terminaste uno? Pulsa <strong>🔁 Jugar de nuevo</strong> en Mundos: ganas más XP,
+                se acumula y te acerca al <strong>podio del ranking</strong> 🏆.
+              </li>
+            </ul>
           </div>
 
           {/* ═══ STATS RÁPIDAS ═══ */}

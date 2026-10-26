@@ -1,4 +1,5 @@
 import { xpRequiredForLevel } from '@/lib/constants'
+import ReplayTip from '@/components/ui/ReplayTip'
 
 interface GameCompletionProps {
   challengesCompleted: number
@@ -149,6 +150,7 @@ export default function GameCompletion({
       )}
 
       {/* Botones deshabilitados hasta que el guardado confirma */}
+      <ReplayTip />
       <div className="nc-completion__actions">
         <button
           className="nc-btn nc-btn--primary nc-btn--lg"

@@ -1,4 +1,5 @@
 import { xpRequiredForLevel } from '@/lib/constants'
+import ReplayTip from '@/components/ui/ReplayTip'
 import { ACHIEVEMENT_NAME } from '../config'
 
 interface LevelCompletionProps {
@@ -152,6 +153,7 @@ export default function LevelCompletion({
       )}
 
       {/* Los botones de salida se habilitan cuando el progreso está a salvo */}
+      <ReplayTip buttonLabel="RECORRER DE NUEVO" />
       <div className="nc-completion__actions">
         <button
           className="nc-btn nc-btn--primary nc-btn--lg"

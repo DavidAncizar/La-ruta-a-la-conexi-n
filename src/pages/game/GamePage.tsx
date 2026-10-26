@@ -6,6 +6,9 @@ import { calculateLevel } from '@/lib/helpers'
 import Footer from '@/components/layout/Footer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import DriveInfoModal from '@/components/ui/DriveInfoModal'
+import GameHelpModal from '@/components/ui/GameHelpModal'
+import GameHelpSide from '@/components/ui/GameHelpSide'
+import { GAME_HELP } from '@/data/gameHelp'
 import RetoJuego from './RetoJuego/RetoJuego'
 import NuevaConexion from './NuevaConexion/NuevaConexion'
 import Explorador from './Explorador/Explorador'
@@ -110,6 +113,10 @@ export default function GamePage() {
   const [saving, setSaving]       = useState(false)
   const [saveError, setSaveError] = useState('')
   const [showDriveModal, setShowDriveModal] = useState(false)
+  const [showHelpModal, setShowHelpModal] = useState(false)
+
+  // La ayuda "¿Cómo se juega?" ya no se abre sola: en PC se ve siempre en
+  // los laterales y en móvil/tablet está el botón destacado del banner.
 
   /**
    * Carga el juego una sola vez por estudiante y actividad.
@@ -512,9 +519,33 @@ export default function GamePage() {
       {showDriveModal && (
         <DriveInfoModal onClose={() => setShowDriveModal(false)} />
       )}
+      {showHelpModal && (
+        <GameHelpModal mechanic={game.mechanic} onClose={() => setShowHelpModal(false)} />
+      )}
 
       <main className="flex-grow-1 py-4">
-        <div className="container" style={{ maxWidth: 720 }}>
+       <div className="gh-layout">
+        {/* Laterales: solo en pantallas anchas, siempre visibles mientras se juega */}
+        <GameHelpSide mechanic={game.mechanic} side="left" />
+
+        <div className="container gh-center" style={{ maxWidth: 720 }}>
+
+          {/* ── Recordatorio social + ayuda del juego (pantallas angostas) ── */}
+          <div className="gh-banner" role="note">
+            <span className="gh-banner__icon" aria-hidden="true">👥</span>
+            <p className="gh-banner__text">
+              <strong>Se juega con amigos.</strong> En persona, en grupo o por redes.
+            </p>
+            {GAME_HELP[game.mechanic] && (
+              <button
+                type="button"
+                className="gh-banner__btn"
+                onClick={() => setShowHelpModal(true)}
+              >
+                ❓ ¿Cómo se juega? Toca aquí
+              </button>
+            )}
+          </div>
 
           {/* ── Botón ¿Por qué subir a Drive? ── */}
           <div className="drive-info-bar">
@@ -546,6 +577,9 @@ export default function GamePage() {
 
           {renderGameByMechanic()}
         </div>
+
+        <GameHelpSide mechanic={game.mechanic} side="right" />
+       </div>
       </main>
 
       <Footer />
