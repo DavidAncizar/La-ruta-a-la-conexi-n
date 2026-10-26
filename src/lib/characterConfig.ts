@@ -23,6 +23,8 @@ export interface CharacterOption {
   label: string
   /** Mundo temático al que pertenece (1, 2 o 3) */
   world: CharacterWorld
+  /** Grupo temático dentro del mundo (profesión, tipo de caballero...) */
+  group: string
   /** Mundos que deben estar completados para desbloquear este personaje */
   worldRequired: 0 | 1 | 2
 }
@@ -34,87 +36,142 @@ const WORLD_REQUIRED: Record<CharacterWorld, 0 | 1 | 2> = {
   3: 2, // Se desbloquean al completar el Mundo 2
 }
 
-function mk(file: string, label: string, world: CharacterWorld): CharacterOption {
-  return {
+/** Archivo + etiqueta de cada personaje de un grupo */
+type CharacterEntry = readonly [file: string, label: string]
+
+/** Crea todos los personajes de un grupo temático de un mundo */
+function mkGroup(world: CharacterWorld, group: string, entries: CharacterEntry[]): CharacterOption[] {
+  return entries.map(([file, label]) => ({
     id: file.replace(/\.jpg$/i, ''),
     file,
     label,
     world,
+    group,
     worldRequired: WORLD_REQUIRED[world],
-  }
+  }))
 }
 
 // ─── Catálogo completo (57 personajes) ────────────────────────────────────────
 
 export const CHARACTERS: CharacterOption[] = [
   // ══ MUNDO 1 — 4 avatares iniciales, siempre disponibles ══
-  mk('primero_mundo_chicaBlanca.jpg', 'Chica', 1),
-  mk('primero_mundo_chicaMorena.jpg', 'Chica', 1),
-  mk('primero_mundo_chicoBlanco.jpg', 'Chico', 1),
-  mk('primero_mundo_chicoMoreno.jpg', 'Chico', 1),
+  ...mkGroup(1, 'Personajes iniciales', [
+    ['primero_mundo_chicaBlanca.jpg', 'Chica'],
+    ['primero_mundo_chicaMorena.jpg', 'Chica'],
+    ['primero_mundo_chicoBlanco.jpg', 'Chico'],
+    ['primero_mundo_chicoMoreno.jpg', 'Chico'],
+  ]),
 
   // ══ MUNDO 2 — profesiones, se desbloquean al completar el Mundo 1 ══
-  mk('segundo_mundo_abogado_blanca.jpg', 'Abogada', 2),
-  mk('segundo_mundo_abogado_blanco.jpg', 'Abogado', 2),
-  mk('segundo_mundo_abogado_morena.jpg', 'Abogada', 2),
-  mk('segundo_mundo_abogado_moreno.jpg', 'Abogado', 2),
-  mk('segundo_mundo_rubia_ambiental.jpg', 'Ambiental', 2),
-  mk('segundo_mundo_astronauta_blanco.jpg', 'Astronauta', 2),
-  mk('segundo_mundo_astronauta_blanlca.jpg', 'Astronauta', 2),
-  mk('segundo_mundo_astronauta_morena.jpg', 'Astronauta', 2),
-  mk('segundo_mundo_astronauta_moreno.jpg', 'Astronauta', 2),
-  mk('segundo_mundo_chef_blanca.jpg', 'Chef', 2),
-  mk('segundo_mundo_chef_blanco.jpg', 'Chef', 2),
-  mk('segundo_mundo_chef_morena.jpg', 'Chef', 2),
-  mk('segundo_mundo_chef_moreno.jpg', 'Chef', 2),
-  mk('segundo_mundo_danzante_blacno.jpg', 'Danzante', 2),
-  mk('segundo_mundo_danzante_blanca.jpg', 'Danzante', 2),
-  mk('segundo_mundo_danzante_morena.jpg', 'Danzante', 2),
-  mk('segundo_mundo_danzante_moreno.jpg', 'Danzante', 2),
-  mk('segundo_mundo_deportista_blancaa.jpg', 'Deportista', 2),
-  mk('segundo_mundo_deportista_blanco.jpg', 'Deportista', 2),
-  mk('segundo_mundo_deportista_morena.jpg', 'Deportista', 2),
-  mk('segundo_mundo_deportista_moreno.jpg', 'Deportista', 2),
-  mk('segundo_mundo_ingeniera_blanca.jpg', 'Ingeniera', 2),
-  mk('segundo_mundo_ingeniera_morena.jpg', 'Ingeniera', 2),
-  mk('segundo_mundo_ingeniero_blanco.jpg', 'Ingeniero', 2),
-  mk('segundo_mundo_ingeniero_moreno.jpg', 'Ingeniero', 2),
-  mk('segundo_mundo_maga_blanca.jpg', 'Maga', 2),
-  mk('segundo_mundo_maga_morena.jpg', 'Maga', 2),
-  mk('segundo_mundo_mago_blanco.jpg', 'Mago', 2),
-  mk('segundo_mundo_mago_moreno.jpg', 'Mago', 2),
-  mk('segundo_mundo_medica_blanca.jpg', 'Médica', 2),
-  mk('segundo_mundo_medica_morena.jpg', 'Médica', 2),
-  mk('segundo_mundo_medico_blanco.jpg', 'Médico', 2),
-  mk('segundo_mundo_medico_moreno.jpg', 'Médico', 2),
-  mk('segundo_mundo_militar_blanca.jpg', 'Militar', 2),
-  mk('segundo_mundo_militar_blanco.jpg', 'Militar', 2),
-  mk('segundo_mundo_militar_morena.jpg', 'Militar', 2),
-  mk('segundo_mundo_militar_moreno.jpg', 'Militar', 2),
-  mk('segundo_mundo_musico_blanco.jpg', 'Músico', 2),
-  mk('segundo_mundo_musico_moreno.jpg', 'Músico', 2),
-  mk('segundo_mundo_musico_mujer_blanco.jpg', 'Música', 2),
-  mk('segundo_mundo_musico_mujer_morena.jpg', 'Música', 2),
-  mk('segundo_mundo_veterinaria_blanca.jpg', 'Veterinaria', 2),
-  mk('segundo_mundo_veterinaria_morena.jpg', 'Veterinaria', 2),
-  mk('segundo_mundo_veterinario_blanco.jpg', 'Veterinario', 2),
-  mk('segundo_mundo_veterinario_moreno.jpg', 'Veterinario', 2),
+  ...mkGroup(2, 'Abogacía', [
+    ['segundo_mundo_abogado_blanca.jpg', 'Abogada'],
+    ['segundo_mundo_abogado_blanco.jpg', 'Abogado'],
+    ['segundo_mundo_abogado_morena.jpg', 'Abogada'],
+    ['segundo_mundo_abogado_moreno.jpg', 'Abogado'],
+  ]),
+  ...mkGroup(2, 'Ambiental', [
+    ['segundo_mundo_rubia_ambiental.jpg', 'Ambiental'],
+  ]),
+  ...mkGroup(2, 'Astronautas', [
+    ['segundo_mundo_astronauta_blanco.jpg', 'Astronauta'],
+    ['segundo_mundo_astronauta_blanlca.jpg', 'Astronauta'],
+    ['segundo_mundo_astronauta_morena.jpg', 'Astronauta'],
+    ['segundo_mundo_astronauta_moreno.jpg', 'Astronauta'],
+  ]),
+  ...mkGroup(2, 'Chefs', [
+    ['segundo_mundo_chef_blanca.jpg', 'Chef'],
+    ['segundo_mundo_chef_blanco.jpg', 'Chef'],
+    ['segundo_mundo_chef_morena.jpg', 'Chef'],
+    ['segundo_mundo_chef_moreno.jpg', 'Chef'],
+  ]),
+  ...mkGroup(2, 'Danza', [
+    ['segundo_mundo_danzante_blacno.jpg', 'Danzante'],
+    ['segundo_mundo_danzante_blanca.jpg', 'Danzante'],
+    ['segundo_mundo_danzante_morena.jpg', 'Danzante'],
+    ['segundo_mundo_danzante_moreno.jpg', 'Danzante'],
+  ]),
+  ...mkGroup(2, 'Deporte', [
+    ['segundo_mundo_deportista_blancaa.jpg', 'Deportista'],
+    ['segundo_mundo_deportista_blanco.jpg', 'Deportista'],
+    ['segundo_mundo_deportista_morena.jpg', 'Deportista'],
+    ['segundo_mundo_deportista_moreno.jpg', 'Deportista'],
+  ]),
+  ...mkGroup(2, 'Ingeniería', [
+    ['segundo_mundo_ingeniera_blanca.jpg', 'Ingeniera'],
+    ['segundo_mundo_ingeniera_morena.jpg', 'Ingeniera'],
+    ['segundo_mundo_ingeniero_blanco.jpg', 'Ingeniero'],
+    ['segundo_mundo_ingeniero_moreno.jpg', 'Ingeniero'],
+  ]),
+  ...mkGroup(2, 'Magia', [
+    ['segundo_mundo_maga_blanca.jpg', 'Maga'],
+    ['segundo_mundo_maga_morena.jpg', 'Maga'],
+    ['segundo_mundo_mago_blanco.jpg', 'Mago'],
+    ['segundo_mundo_mago_moreno.jpg', 'Mago'],
+  ]),
+  ...mkGroup(2, 'Medicina', [
+    ['segundo_mundo_medica_blanca.jpg', 'Médica'],
+    ['segundo_mundo_medica_morena.jpg', 'Médica'],
+    ['segundo_mundo_medico_blanco.jpg', 'Médico'],
+    ['segundo_mundo_medico_moreno.jpg', 'Médico'],
+  ]),
+  ...mkGroup(2, 'Militares', [
+    ['segundo_mundo_militar_blanca.jpg', 'Militar'],
+    ['segundo_mundo_militar_blanco.jpg', 'Militar'],
+    ['segundo_mundo_militar_morena.jpg', 'Militar'],
+    ['segundo_mundo_militar_moreno.jpg', 'Militar'],
+  ]),
+  ...mkGroup(2, 'Música', [
+    ['segundo_mundo_musico_blanco.jpg', 'Músico'],
+    ['segundo_mundo_musico_moreno.jpg', 'Músico'],
+    ['segundo_mundo_musico_mujer_blanco.jpg', 'Música'],
+    ['segundo_mundo_musico_mujer_morena.jpg', 'Música'],
+  ]),
+  ...mkGroup(2, 'Veterinaria', [
+    ['segundo_mundo_veterinaria_blanca.jpg', 'Veterinaria'],
+    ['segundo_mundo_veterinaria_morena.jpg', 'Veterinaria'],
+    ['segundo_mundo_veterinario_blanco.jpg', 'Veterinario'],
+    ['segundo_mundo_veterinario_moreno.jpg', 'Veterinario'],
+  ]),
 
   // ══ MUNDO 3 — caballeros, se desbloquean al completar el Mundo 2 ══
-  mk('tercer_mundo_caballero_dorado_blanca.jpg', 'Caballera Dorada', 3),
-  mk('tercer_mundo_caballero_dorado_blanco.jpg', 'Caballero Dorado', 3),
-  mk('tercer_mundo_caballero_dorado_morena.jpg', 'Caballera Dorada', 3),
-  mk('tercer_mundo_caballero_dorado_moreno.jpg', 'Caballero Dorado', 3),
-  mk('tercer_mundo_caballero_gris_blanca.jpg', 'Caballera Gris', 3),
-  mk('tercer_mundo_caballero_gris_blanco.jpg', 'Caballero Gris', 3),
-  mk('tercer_mundo_caballero_gris_morena.jpg', 'Caballera Gris', 3),
-  mk('tercer_mundo_caballero_gris_moreno.jpg', 'Caballero Gris', 3),
+  ...mkGroup(3, 'Caballeros dorados', [
+    ['tercer_mundo_caballero_dorado_blanca.jpg', 'Caballera Dorada'],
+    ['tercer_mundo_caballero_dorado_blanco.jpg', 'Caballero Dorado'],
+    ['tercer_mundo_caballero_dorado_morena.jpg', 'Caballera Dorada'],
+    ['tercer_mundo_caballero_dorado_moreno.jpg', 'Caballero Dorado'],
+  ]),
+  ...mkGroup(3, 'Caballeros grises', [
+    ['tercer_mundo_caballero_gris_blanca.jpg', 'Caballera Gris'],
+    ['tercer_mundo_caballero_gris_blanco.jpg', 'Caballero Gris'],
+    ['tercer_mundo_caballero_gris_morena.jpg', 'Caballera Gris'],
+    ['tercer_mundo_caballero_gris_moreno.jpg', 'Caballero Gris'],
+  ]),
 ]
 
 export const CHARACTERS_BY_WORLD: Record<CharacterWorld, CharacterOption[]> = {
   1: CHARACTERS.filter(c => c.world === 1),
   2: CHARACTERS.filter(c => c.world === 2),
   3: CHARACTERS.filter(c => c.world === 3),
+}
+
+export interface CharacterGroup {
+  /** Nombre del grupo (profesión, tipo de caballero...) */
+  name: string
+  items: CharacterOption[]
+}
+
+/** Agrupa los personajes de un mundo por tema, respetando el orden del catálogo */
+export function getCharacterGroups(world: CharacterWorld): CharacterGroup[] {
+  const groups: CharacterGroup[] = []
+  for (const character of CHARACTERS_BY_WORLD[world]) {
+    const last = groups[groups.length - 1]
+    if (last && last.name === character.group) {
+      last.items.push(character)
+    } else {
+      groups.push({ name: character.group, items: [character] })
+    }
+  }
+  return groups
 }
 
 /** Metadatos visuales de cada pestaña de mundo */

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabaseClient'
@@ -9,6 +9,8 @@ import {
   WORLD_UNLOCK_LABELS,
   getDefaultCharacterId,
   getCharacterPath,
+  getCharacterById,
+  getCharacterGroups,
   type CharacterWorld,
 } from '@/lib/characterConfig'
 import CharacterAvatar from '@/components/ui/CharacterAvatar'
@@ -39,8 +41,14 @@ export default function ProfilePage() {
   const [characterId, setCharacterId] = useState<string>('')
   const [activeWorld, setActiveWorld] = useState<CharacterWorld>(1)
 
+  /** Contenedor con scroll de la lista de personajes (para saltar entre grupos) */
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   // ── Carga inicial ───────────────────────────────────────────────────────────
   useEffect(() => { if (profile) loadData() }, [profile?.id])
+
+  // Al cambiar de mundo, la lista vuelve arriba
+  useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }) }, [activeWorld])
 
   async function loadData() {
     const [gamesRes, progressRes] = await Promise.all([
@@ -135,6 +143,18 @@ export default function ProfilePage() {
   const isLocked     = activeMeta.worldRequired > worldsCompleted
   const totalUnlocked = worldOrder.filter(w => WORLD_META[w].worldRequired <= worldsCompleted).length
 
+  const activeGroups = getCharacterGroups(activeWorld)
+  const selectedChar = getCharacterById(characterId)
+
+  /** Desplaza la lista hasta el grupo indicado */
+  function scrollToGroup(index: number) {
+    const container = scrollRef.current
+    const target = container?.querySelector<HTMLElement>(`[data-group="${index}"]`)
+    if (container && target) {
+      container.scrollTo({ top: Math.max(target.offsetTop - 8, 0), behavior: 'smooth' })
+    }
+  }
+
   return (
     <div className="game-layout">
       <nav className="game-navbar">
@@ -212,6 +232,15 @@ export default function ProfilePage() {
                 <div className="av-profile-info__row">
                   <span>⚡</span><span>{profile.xp} XP · Nivel {profile.level}</span>
                 </div>
+                {selectedChar && (
+                  <div className="av-profile-info__row">
+                    <span>🎭</span>
+                    <span>
+                      {selectedChar.label}
+                      {selectedChar.world > 1 && ` · ${selectedChar.group}`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -231,6 +260,7 @@ export default function ProfilePage() {
                     >
                       <span className="av-cat-tab__icon">{meta.icon}</span>
                       <span className="av-cat-tab__label">{meta.label}</span>
+                      <span className="av-cat-tab__count">{CHARACTERS_BY_WORLD[w].length} personajes</span>
                       {locked && <span className="av-cat-tab__lock">🔒</span>}
                     </button>
                   )
@@ -266,25 +296,60 @@ export default function ProfilePage() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="av-options-grid av-options-grid--characters">
-                    {CHARACTERS_BY_WORLD[activeWorld].map(char => {
-                      const isSelected = characterId === char.id
-                      return (
-                        <button
-                          key={char.id}
-                          className={`av-option-card av-option-card--character ${isSelected ? 'selected' : ''}`}
-                          onClick={() => handleSelect(char.id)}
-                          title={char.label}
-                        >
-                          <div className="av-option-card__img-wrap av-option-card__img-wrap--character">
-                            <img src={getCharacterPath(char)} alt={char.label} className="av-option-card__img" />
+                  <>
+                    {/* Atajos a cada grupo (solo si el mundo tiene varios) */}
+                    {activeGroups.length > 1 && (
+                      <nav className="av-groups-nav" aria-label="Ir a un grupo de personajes">
+                        {activeGroups.map((group, index) => {
+                          const hasSelected = group.items.some(c => c.id === characterId)
+                          return (
+                            <button
+                              key={group.name}
+                              type="button"
+                              className={`av-group-chip ${hasSelected ? 'has-selected' : ''}`}
+                              onClick={() => scrollToGroup(index)}
+                            >
+                              {hasSelected && <span aria-hidden="true">✓ </span>}
+                              {group.name}
+                            </button>
+                          )
+                        })}
+                      </nav>
+                    )}
+
+                    <div className="av-groups-scroll" ref={scrollRef}>
+                      {activeGroups.map((group, index) => (
+                        <section key={group.name} className="av-group" data-group={index}>
+                          {activeGroups.length > 1 && (
+                            <h3 className="av-group__title">
+                              {group.name}
+                              <span className="av-group__count">{group.items.length}</span>
+                            </h3>
+                          )}
+                          <div className="av-group__grid">
+                            {group.items.map(char => {
+                              const isSelected = characterId === char.id
+                              return (
+                                <button
+                                  key={char.id}
+                                  className={`av-option-card av-option-card--character ${isSelected ? 'selected' : ''}`}
+                                  onClick={() => handleSelect(char.id)}
+                                  title={char.label}
+                                  aria-pressed={isSelected}
+                                >
+                                  <div className="av-option-card__img-wrap av-option-card__img-wrap--character">
+                                    <img src={getCharacterPath(char)} alt={char.label} className="av-option-card__img" />
+                                  </div>
+                                  <div className="av-option-card__label">{char.label}</div>
+                                  {isSelected && <div className="av-option-card__check">✓</div>}
+                                </button>
+                              )
+                            })}
                           </div>
-                          <div className="av-option-card__label">{char.label}</div>
-                          {isSelected && <div className="av-option-card__check">✓</div>}
-                        </button>
-                      )
-                    })}
-                  </div>
+                        </section>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
 
